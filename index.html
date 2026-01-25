@@ -1,0 +1,51 @@
+<!--Test html file-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Jetson Nano - ESP32 Stream</title>
+    <style>
+        body { background-color: #121212; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; }
+        .container { margin-top: 20px; }
+        img { width: 80%; max-width: 800px; border: 2px solid #00ff00; border-radius: 5px; box-shadow: 0 0 15px #00ff00; }
+        .status { margin-bottom: 10px; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ESP32-CAM LIVE FEED</h1>
+        <div class="status" id="status">Connecting to Jetson...</div>
+        <img id="video-stream" src="">
+    </div>
+
+    <script>
+        // REPLACE THIS with your Jetson Nano's IP
+        const JETSON_IP = "192.168.200.196"; 
+        const ws = new WebSocket(`ws://${JETSON_IP}:3001`);
+        const statusDiv = document.getElementById('status');
+        const img = document.getElementById('video-stream');
+
+        ws.onopen = () => {
+            statusDiv.innerText = "CONNECTED TO JETSON";
+            statusDiv.style.color = "#00ff00";
+            // Tell the Python server we are a BROWSER
+            ws.send("BROWSER");
+        };
+
+        ws.onmessage = (event) => {
+            // Receive binary JPEG from Jetson and convert to an image URL
+            const blob = event.data;
+            const url = URL.createObjectURL(blob);
+            img.src = url;
+
+            // Free memory by revoking the old URL
+            img.onload = () => URL.revokeObjectURL(url);
+        };
+
+        ws.onclose = () => {
+            statusDiv.innerText = "DISCONNECTED";
+            statusDiv.style.color = "red";
+        };
+    </script>
+</body>
+</html>
