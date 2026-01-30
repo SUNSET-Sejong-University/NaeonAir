@@ -1,64 +1,87 @@
-# WisDrone Gateway (nCube-Thyme Integration)
+# WisDrone Gateway
 
-## 개요
+nCube-Thyme integration for Mobius4 IoT platform.
 
-기존 WebSocket 스트리밍 서버(`cam_receiver.py`)와 연동하여 드론 디바이스를 Mobius4 플랫폼에 자동 등록합니다.
+nCube-Thyme 기반 Mobius4 IoT 플랫폼 연동 게이트웨이.
 
-## 디렉토리 구조
+---
 
-```
-ground-control/
-├── cam_receiver.py      # WebSocket 서버 (영상 스트림)
-├── start_gateway.sh     # 게이트웨이 시작 스크립트
-└── ncube/               # nCube-Thyme
-    ├── conf.js          # Mobius 설정 (수정됨)
-    ├── device_handler.js # 디바이스 등록/데이터 전송
-    └── gateway_bridge.js # Python 연동용 HTTP 브릿지
-```
+## Quick Start / 빠른 시작
 
-## 설정
-
-`ncube/conf.js`:
-- **CSE**: `localhost:7599` (Mobius4)
-- **AE**: `WisDrone`
-
-## 실행
+### macOS
 
 ```bash
-# 게이트웨이 시작
-./start_gateway.sh
+# 1. Setup Python venv (first time only / 최초 1회만)
+cd NaeonAir-
+python3 -m venv .venv
+source .venv/bin/activate
+pip install requests websockets
 
-# 또는 직접 실행
-cd ncube && node gateway_bridge.js
+# 2. Install Node dependencies / Node 의존성 설치
+cd ground-control/ncube && npm install && cd ..
+
+# 3. Run gateway / 게이트웨이 실행
+./start_gateway.sh
 ```
 
-## API
+### Linux (Ubuntu/Debian)
 
-| Endpoint | Method | 설명 |
-|----------|--------|------|
-| `/register` | POST | 디바이스 등록 |
-| `/status` | POST | 상태 데이터 전송 |
-| `/crowd` | POST | 군중 분석 데이터 |
-| `/alert` | POST | 알림 전송 |
-| `/devices` | GET | 등록된 디바이스 목록 |
-| `/health` | GET | 헬스 체크 |
+```bash
+# 1. Install requirements / 필수 패키지 설치
+sudo apt update
+sudo apt install -y python3-venv nodejs npm
 
-## Python 연동 예시
+# 2. Setup Python venv / Python 가상환경 설정
+cd NaeonAir-
+python3 -m venv .venv
+source .venv/bin/activate
+pip install requests websockets
 
-```python
-import requests
+# 3. Install Node dependencies / Node 의존성 설치
+cd ground-control/ncube && npm install && cd ..
 
-BRIDGE_URL = "http://localhost:9800"
+# 4. Run gateway / 게이트웨이 실행
+chmod +x start_gateway.sh
+./start_gateway.sh
+```
 
-# 디바이스 등록
-resp = requests.post(f"{BRIDGE_URL}/register")
-device_id = resp.json()["deviceId"]
+---
 
-# 상태 전송
-requests.post(f"{BRIDGE_URL}/status", json={
-    "deviceId": device_id,
-    "position": {"lat": 37.4979, "lng": 127.0276, "altitude": 50},
-    "status": "ACTIVE",
-    "battery": 85
-})
+## Ports / 포트
+
+| Service | Port | Description |
+|---------|------|-------------|
+| WebSocket Gateway | 3001 | Drone ↔ Frontend streaming |
+| Node.js Bridge | 9800 | Mobius API bridge |
+| Mobius4 | 7599 | IoT platform |
+
+---
+
+## API Endpoints / API 엔드포인트
+
+### WebSocket (ws://localhost:3001)
+
+| Message | Description |
+|---------|-------------|
+| `{ type: 'DRONE', deviceId: 'xxx' }` | Drone handshake / 드론 연결 |
+| `{ type: 'FRONTEND' }` | Frontend handshake / 프론트엔드 연결 |
+| `{ type: 'SUBSCRIBE', deviceId: 'xxx' }` | Subscribe to device / 디바이스 구독 |
+
+### HTTP Bridge (http://localhost:9800)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/register` | POST | Register device / 디바이스 등록 |
+| `/status` | POST | Send status / 상태 전송 |
+| `/devices` | GET | List devices / 디바이스 목록 |
+| `/health` | GET | Health check / 상태 확인 |
+
+---
+
+## Test / 테스트
+
+```bash
+source .venv/bin/activate
+cd ground-control
+python3 drone_simulator.py
 ```
