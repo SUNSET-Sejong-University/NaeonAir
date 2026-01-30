@@ -130,6 +130,7 @@ void setup()
   
   Serial.begin(115200);
   pinMode(LED_GPIO_NUM, OUTPUT);
+  pinMode(RED_LED_GPIO, OUTPUT);
   Serial.setDebugOutput(true);
 
   init_camera();

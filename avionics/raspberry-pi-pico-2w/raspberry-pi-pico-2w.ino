@@ -1,41 +1,73 @@
 #include <TinyGPS++.h>
 #include <Servo.h>
+#include <WiFi.h>
 
+WiFiClient client;
 Servo myServo;
 TinyGPSPlus gps;
 
-int servoPin = 16;
+const char* ssid = "sejong-guest";
+const char* password = "0234083114";
+const char* host = "172.19.20.99";
+const uint16_t port = 3002; 
 
-void setup()
+const int ledPin = LED_BUILTIN;
+
+int servoPin = 16;
+unsigned long lastMoveTime = 0;
+int servoStage = 0;
+
+void setup() 
 {
   Serial.begin(115200);
   Serial1.begin(9600);
-
-  while(!Serial);
-
+  pinMode(ledPin, OUTPUT);
   myServo.attach(servoPin);
+
+  // connect to wifi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi Connected");
 }
 
-void loop()
+void loop() 
 {
-  // Sweep from 0 to 180 degrees
-  myServo.write(0);
-  delay(1000);
-  myServo.write(90);
-  delay(1000);
-  myServo.write(180);
-  delay(1000);
-  
-  // see serial output for lat, lon and alt
-  if (Serial1.available())
+  unsigned long currentMillis = millis();
+
+  if (!client.connected())
   {
-    if (gps.encode(Serial1.read()))
+    client.connect(host, port);
+  }
+
+  // non blocking servo logic
+  if (currentMillis - lastMoveTime >= 1000) 
+  {
+    lastMoveTime = currentMillis;
+    if (servoStage == 0) { myServo.write(0);   digitalWrite(ledPin, HIGH); servoStage = 1; }
+    else if (servoStage == 1) { myServo.write(90);  digitalWrite(ledPin, LOW);  servoStage = 2; }
+    else { myServo.write(180); digitalWrite(ledPin, HIGH); servoStage = 0; }
+  }
+
+  // gps 
+  while (Serial1.available() > 0) 
+  {
+    if (gps.encode(Serial1.read())) 
     {
-      if (gps.location.isValid())
+      if (gps.location.isUpdated() && gps.location.isValid()) 
       {
-        Serial.print("Lat: "); Serial.println(gps.location.lat(), 6);
-        Serial.print("Lon: "); Serial.println(gps.location.lng(), 6);
-        Serial.print("Alt: "); Serial.println(gps.altitude.meters());
+        String gpsData = "GPS," + String(gps.location.lat(), 6) + "," + 
+                          String(gps.location.lng(), 6) + "," +
+                          String(gps.altitude.meters());
+        
+        if (client.available())
+        {
+          client.println(gpsData);
+        }
+        Serial.println("Sent: " + gpsData);
       }
     }
   }
