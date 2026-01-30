@@ -28,10 +28,10 @@
 // 4 for flash led or 33 for normal led
 #define LED_GPIO_NUM   4
 
-const char* ssid = "DLive_CEA8";
-const char* password = "BD0982CEA7";
+const char* ssid = "sejong-guest";
+const char* password = "0234083114";
 
-const char* websockets_server_host = "192.168.200.196";
+const char* websockets_server_host = "172.19.20.99";
 const uint16_t websockets_server_port = 3001;
 
 camera_fb_t* fb = NULL;
@@ -125,6 +125,7 @@ void setup()
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
   
   Serial.begin(115200);
+  pinMode(LED_GPIO_NUM, OUTPUT);
   Serial.setDebugOutput(true);
 
   init_camera();
@@ -135,7 +136,7 @@ void loop()
 {
   if (client.available())
   {
-    digitalWrite(FLASH_LED_PIN, HIGH);
+    digitalWrite(LED_GPIO_NUM, HIGH);
     camera_fb_t* fb = esp_camera_fb_get();
     if(!fb)
     {
