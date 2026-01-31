@@ -17,6 +17,9 @@ int servoPin = 16;
 unsigned long lastMoveTime = 0;
 int servoStage = 0;
 
+unsigned long lastConnectAttempt = 0;
+const unsigned long reconnectInterval = 1000; // for gps to try reconection every 10 s
+
 void setup() 
 {
   Serial.begin(115200);
@@ -40,7 +43,11 @@ void loop()
 
   if (!client.connected())
   {
-    client.connect(host, port);
+    if (currentMillis - lastConnectAttempt >= reconnectInterval)
+    {
+      lastConnectAttempt = currentMillis;
+      client.connect(host, port);
+    }
   }
 
   // non blocking servo logic
@@ -63,7 +70,7 @@ void loop()
                           String(gps.location.lng(), 6) + "," +
                           String(gps.altitude.meters());
         
-        if (client.available())
+        if (client.connected())
         {
           client.println(gpsData);
         }

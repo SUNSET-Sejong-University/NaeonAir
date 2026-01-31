@@ -32,10 +32,10 @@
 #define LIGHT_THRESHOLD 400
 
 
-const char* ssid = "sejong-guest";
-const char* password = "0234083114";
+const char* ssid = "Prithwis's Galaxy A23 5G";
+const char* password = "llmg3484";
 
-const char* websockets_server_host = "172.19.20.99";
+const char* websockets_server_host = "192.168.147.178";
 const uint16_t websockets_server_port = 3001;
 
 camera_fb_t* fb = NULL;
