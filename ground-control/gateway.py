@@ -18,7 +18,8 @@ from functools import partial
 # Configuration
 # ==========================================
 WS_PORT = 3001
-AI_SERVER_URL = "http://192.168.0.XX:8000/analyze"  # AI 서버 주소
+AI_SERVER_URL = "http://localhost:8000/analyze"  # AI 서버 주소 (로컬)
+AI_GPS_URL = "http://localhost:8000/gps"         # AI 서버 GPS 엔드포인트
 AI_SEND_INTERVAL = 10.0  # 10초 간격
 DEVICE_MANAGER_URL = "http://localhost:9800"  # Node.js bridge
 
@@ -84,6 +85,16 @@ def send_frame_to_ai(device_id, frame_bytes):
         print(f"📸 AI: {device_id} → {response.status_code}")
     except Exception as e:
         print(f"⚠️ AI send failed: {e}")
+
+
+def send_gps_to_ai(device_id, gps_data):
+    """GPS 데이터를 AI 서버로 전송"""
+    try:
+        payload = {"device_id": device_id, **gps_data}
+        response = requests.post(AI_GPS_URL, json=payload, timeout=2)
+        print(f"📍 GPS: {device_id} → {response.status_code}")
+    except Exception as e:
+        print(f"⚠️ GPS send failed: {e}")
 
 
 # ==========================================
@@ -168,6 +179,23 @@ async def handler(websocket):
                             "type": "DEVICE_LIST",
                             "devices": list(drone_connections.keys())
                         }))
+                    
+                    # GPS 데이터 수신 (드론에서)
+                    elif msg_type == "GPS" and client_type == "drone":
+                        gps_data = {
+                            "lat": data.get("lat", 0.0),
+                            "lng": data.get("lng", 0.0),
+                            "altitude": data.get("altitude", 50.0),
+                            "battery": data.get("battery", 100.0),
+                            "heading": data.get("heading", 0.0),
+                            "speed": data.get("speed", 0.0)
+                        }
+                        # AI 서버로 전송 (비동기)
+                        loop = asyncio.get_running_loop()
+                        loop.run_in_executor(
+                            None, 
+                            partial(send_gps_to_ai, device_id, gps_data)
+                        )
                 
                 except json.JSONDecodeError:
                     # 레거시: "BROWSER" 문자열
