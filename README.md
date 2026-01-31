@@ -41,7 +41,10 @@ Summary:
 - The F405 flight controller handles power distribution to the servo (5V / GND) and provides telemetry and other interfaces for UAV control.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/3026fc20-5ac4-4f5c-87d6-9f42ac98cca2" width="420" alt="Circuit Design" />
+  <img src="https://github.com/user-attachments/assets/3026fc20-5ac4-4f5c-87d6-9f42ac98cca2" width="45%" alt="Circuit Design" />
+  &nbsp;
+  <img src="https://github.com/user-attachments/assets/12ff8426-857a-426b-ae6c-de7912ff02ce" width="45%" alt="Circuit Diagram 2" />
+  </a>
 </p>
 
 ### Wiring highlights:
