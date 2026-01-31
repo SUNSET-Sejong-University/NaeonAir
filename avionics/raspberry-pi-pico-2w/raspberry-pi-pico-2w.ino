@@ -51,7 +51,7 @@ void loop()
   }
 
   // non blocking servo logic
-  if (currentMillis - lastMoveTime >= 1000) 
+  if (currentMillis - lastMoveTime >= 5000) 
   {
     lastMoveTime = currentMillis;
     if (servoStage == 0) { myServo.write(0);   digitalWrite(ledPin, HIGH); servoStage = 1; }

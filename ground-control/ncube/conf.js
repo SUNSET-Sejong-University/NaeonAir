@@ -28,7 +28,7 @@ conf.sim = 'disable'; // enable or disable
 
 // build cse - Mobius4 설정
 cse = {
-    host    : 'localhost',
+    host    : '172.16.10.64',
     port    : '7599',           // Mobius4 HTTP 포트
     name    : 'Mobius',
     id      : '/Mobius',        // Mobius4 CSE-ID
