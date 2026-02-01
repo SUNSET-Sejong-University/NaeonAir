@@ -585,3 +585,5 @@ Protocol:
 ✅ Container created: crowd_analysis
 ✅ Container created: alerts
 ✅ Device registered: device_mbgmm8
+./start_gateway.sh: line 67: 19374 Hangup: 1               node gateway_bridge.js  (wd: ~/Desktop/NaeonAir-/ground-control/ncube)
+./start_gateway.sh: line 67: 19454 Killed: 9               python3 gateway.py
