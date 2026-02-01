@@ -8,7 +8,7 @@ TinyGPSPlus gps;
 
 const char* ssid = "sejong-guest";
 const char* password = "0234083114";
-const char* host = "172.19.20.99";
+const char* host = "172.19.20.99";  // use the gateway device ip
 const uint16_t port = 3002; 
 
 const int ledPin = LED_BUILTIN;
@@ -18,7 +18,7 @@ unsigned long lastMoveTime = 0;
 int servoStage = 0;
 
 unsigned long lastConnectAttempt = 0;
-const unsigned long reconnectInterval = 1000; // for gps to try reconection every 10 s
+const unsigned long reconnectInterval = 5000; // for gps to try reconection every 5 s
 
 void setup() 
 {

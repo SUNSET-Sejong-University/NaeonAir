@@ -241,25 +241,88 @@ async def handler(websocket):
                 del frontend_subscriptions[websocket]
             print(f"🖥️ Frontend disconnected")
 
+# ==========================================
+# Pico TCP Telemetry Integration (미구현)
+# ==========================================
+async def handle_pico_telemetry(reader, writer):
+    """we handle raw TCP GPS data from the Raspberry Pi Pico 2W on port 3002"""
+    device_id = "pico_telemetry"
+    loop = asyncio.get_running_loop()  # keep the loop running for background tasks
+    print("Pico Telemtry connected to Port 3002")
+
+    try:
+        while True:
+            data  = await reader.readline()
+            if not data:
+                break
+
+            message = data.decode().strip()
+            # we parse the GPS,lat,lon,alt string
+            if message.startswith("GPS"):
+                parts = message.split(",")
+                if len(parts) == 4:
+                    gps_data = {
+                        "lat": float(parts[1]),
+                        "lng": float(parts[2]),
+                        "altitude": float(parts[3]),
+                    }
+                    # send to AI server
+                    loop.run_in_executor(None, partial(send_gps_to_ai, device_id, gps_data))  # run in background
+
+                    # forward to mobius
+                    loop.run_in_executor(None, partial(send_status_to_mobius, device_id, gps_data)) # run in background
+
+                    print(f"📍 Relayed GPS from Pico: {gps_data['lat']}, {gps_data['lng']}")
+
+    except Exception as e:
+        print(f"⚠️ Pico Telemetry error: {e}")
+    finally:
+        print("Pico Telemetry disconnected")
+        writer.close()
+        await writer.wait_closed()
+
 
 # ==========================================
 # Main
 # ==========================================
 async def main():
-    async with serve(handler, "0.0.0.0", WS_PORT):
-        print("==========================================")
-        print("🚀 WisDrone Gateway Running")
-        print(f"📡 WebSocket Port: {WS_PORT}")
-        print(f"🤖 AI Server: {AI_SERVER_URL}")
-        print(f"⏱️ AI Send Interval: {AI_SEND_INTERVAL}s")
-        print("==========================================")
-        print("")
-        print("Protocol:")
-        print("  Drone  → { type: 'DRONE', deviceId: 'xxx' }")
-        print("  Frontend → { type: 'FRONTEND' }")
-        print("  Subscribe → { type: 'SUBSCRIBE', deviceId: 'xxx' }")
-        print("==========================================")
-        await asyncio.Future()
+    ws_server = serve(handler, "0.0.0.0", WS_PORT)  # start the websocket server (port 3001)
+    pico_server = await asyncio.start_server(handle_pico_telemetry, "0.0.0.0", 3002) # start the pico telemetry server (port 3002)
+    
+    print("==========================================")
+    print("🚀 WisDrone Gateway Running")
+    print(f"📡 WebSocket Port: {WS_PORT}")
+    print(f"📡 TCP (Telemetry) Port: 3002")
+    print(f"🤖 AI Server: {AI_SERVER_URL}")
+    print(f"⏱️ AI Send Interval: {AI_SEND_INTERVAL}s")
+    print("==========================================")
+    print("")
+    print("Protocol:")
+    print("  Drone  → { type: 'DRONE', deviceId: 'xxx' }")
+    print("  Frontend → { type: 'FRONTEND' }")
+    print("  Subscribe → { type: 'SUBSCRIBE', deviceId: 'xxx' }")
+    print("==========================================")
+
+    async with ws_server:
+        await asyncio.gather(
+            asyncio.Future(),  # run forever
+            pico_server.serve_forever()
+        )
+    # async with serve(handler, "0.0.0.0", WS_PORT):
+    #     print("==========================================")
+    #     print("🚀 WisDrone Gateway Running")
+    #     print(f"📡 WebSocket Port: {WS_PORT}")
+    #     print(f"📡 TCP (Telemetry) Port: 3002")
+    #     print(f"🤖 AI Server: {AI_SERVER_URL}")
+    #     print(f"⏱️ AI Send Interval: {AI_SEND_INTERVAL}s")
+    #     print("==========================================")
+    #     print("")
+    #     print("Protocol:")
+    #     print("  Drone  → { type: 'DRONE', deviceId: 'xxx' }")
+    #     print("  Frontend → { type: 'FRONTEND' }")
+    #     print("  Subscribe → { type: 'SUBSCRIBE', deviceId: 'xxx' }")
+    #     print("==========================================")
+    #     await asyncio.Future()
 
 
 if __name__ == "__main__":
