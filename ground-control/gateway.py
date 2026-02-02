@@ -18,8 +18,8 @@ from functools import partial
 # Configuration
 # ==========================================
 WS_PORT = 3001
-AI_SERVER_URL = "http://172.16.10.64:8000/analyze"  # AI 서버 주소 (로컬)
-AI_GPS_URL = "http://172.16.10.64:8000/gps"         # AI 서버 GPS 엔드포인트
+AI_SERVER_URL = "http://172.19.22.32:8000/analyze"  # AI 서버 주소 (로컬)
+AI_GPS_URL = "http://172.19.22.32:8000/gps"         # AI 서버 GPS 엔드포인트
 AI_SEND_INTERVAL = 10.0  # 10초 간격
 DEVICE_MANAGER_URL = "http://localhost:9800"  # Node.js bridge
 

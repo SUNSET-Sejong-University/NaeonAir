@@ -28,7 +28,7 @@ conf.sim = 'disable'; // enable or disable
 
 // build cse - Mobius4 설정
 cse = {
-    host    : '172.16.10.64',
+    host    : '172.19.22.32',
     port    : '7599',           // Mobius4 HTTP 포트
     name    : 'Mobius',
     id      : '/Mobius',        // Mobius4 CSE-ID
@@ -41,7 +41,7 @@ let ae_name = 'WisDrone';
 
 ae = {
     name    : ae_name,
-    id      : 'S' + ae_name,
+    id      : 'SM' + ae_name,
     parent  : '/' + cse.name,
     appid   : 'wisdrone',       // 프론트엔드 설정과 일치
     port    : '9727',
