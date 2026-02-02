@@ -190,11 +190,11 @@ async def handler(websocket):
                             "heading": data.get("heading", 0.0),
                             "speed": data.get("speed", 0.0)
                         }
-                        # AI 서버로 전송 (비동기)
+                        # Mobius로 전송 (비동기)
                         loop = asyncio.get_running_loop()
                         loop.run_in_executor(
-                            None, 
-                            partial(send_gps_to_ai, device_id, gps_data)
+                            None,
+                            partial(send_status_to_mobius, device_id, gps_data)
                         )
                 
                 except json.JSONDecodeError:
